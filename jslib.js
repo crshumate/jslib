@@ -102,6 +102,39 @@ jl.init = function(selector) {
         }
     }
 
+    function eventHandler(selector, event, callback) {
+
+        var event_map = {
+            "click": "onclick",
+            "mouseenter": "onmouseenter",
+            "mouseleave": "onmouseleave",
+            "keyup": "onkeyup",
+            "keydown": "onkeydown",
+            "blur": "onblur",
+            "focus": "onfocus"
+        };
+
+        if (typeof selector[0] === 'undefined') {
+            selector[event_map[event]] = callback;
+        } else {
+            var length = selector.length;
+            for (var i = 0; i < length; i++) {
+                selector[i][event_map[event]] = callback;
+            }
+        }
+    }
+
+    function triggerEvent(selector, event) {
+        if (typeof selector[0] === 'undefined') {
+            selector[event]();
+        } else {
+            var length = selector.length;
+            for (var i = 0; i < length; i++) {
+                selector[i][event]();
+            }
+        }
+    }
+
     var prop = {
         //this.isValid use to make sure our selected element exists!!
         isValid: jl.init.isValid,
@@ -165,6 +198,26 @@ jl.init = function(selector) {
             return this;
         },
 
+        blur: function(callback) {
+            if (!this.isValid) return this;
+
+            if (callback) {
+                eventHandler(this.selector, 'blur', callback)
+            } else {
+                triggerEvent(this.selector, 'blur');
+
+                return this;
+            }
+        },
+        change: function(callback) {
+            if (!this.isValid) return this;
+            if (callback) {
+                eventHandler(this.selector, 'change', callback);
+            } else {
+                //TODO: handle triggered Change event..... 
+            }
+            return this;
+        },
         children: function() {
 
             if (!this.isValid) return this;
@@ -184,6 +237,17 @@ jl.init = function(selector) {
 
                 this.selector = arr;
                 this.value = this.selector;
+            }
+
+            return this;
+        },
+        click: function(callback) {
+            if (!this.isValid) return this;
+            if (callback) {
+                eventHandler(this.selector, 'click', callback)
+            } else {
+                triggerEvent(this.selector, 'click');
+
             }
 
             return this;
@@ -215,6 +279,16 @@ jl.init = function(selector) {
             }
             return this;
         },
+        focus: function(callback) {
+            if (!this.isValid) return this;
+            if (callback) {
+                eventHandler(this.selector, 'focus', callback);
+            } else {
+                triggerEvent(this.selector, 'focus');
+
+            }
+            return this;
+        },
         hasClass: function(class_name) {
             if (!this.isValid) return this;
 
@@ -234,6 +308,37 @@ jl.init = function(selector) {
                     break;
                 }
             }
+            return this;
+        },
+        hover: function(callback1, callback2) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, 'mouseenter', callback1);
+            eventHandler(this.selector, 'mouseleave', callback2);
+            return this;
+        },
+        keydown: function(callback) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, 'keydown', callback);
+            return this;
+        },
+        keyup: function(callback) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, 'keyup', callback);
+            return this;
+        },
+        mouseenter: function(callback) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, 'mouseenter', callback)
+            return this;
+        },
+        mouseleave: function(callback) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, 'mouseleave', callback)
+            return this;
+        },
+        on: function(event, callback) {
+            if (!this.isValid) return this;
+            eventHandler(this.selector, event, callback)
             return this;
         },
         parent: function() {

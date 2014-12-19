@@ -31,8 +31,22 @@ $(document).ready(function() {
     console.log(result);
     */
     
-     $(".find-example").addClass("appending-class, woot").removeClass('woot').find("li").addClass('added classes to found elements').removeClass('added, found');
-    var result= $("#test").hasClass('chris').result();
-    console.log(result);
+    // $(".find-example").addClass("appending-class, woot").removeClass('woot').find("li").addClass('added classes to found elements').removeClass('added, found');
+    //var result= $("#test").hasClass('chris').result();
     
+    $(".another-test").on('click',function(){
+        console.log("i'm working!");
+    });
+    $(".another-test").click();
+    $("#test").click(function(){
+        console.log('iclickedonchris');
+    });
+    $("#myInput").focus();
+    setTimeout(function(){
+        $("#myInput").blur();
+    },2000)
+    
+    //$("#test").hover(function(){console.log('thou has hovered');}, function(){console.log('thou has left');});
+
+    //$("#myInput").keyup(function(){console.log('bro keyup dude')}).keydown(function(){console.log('sista we got a keydown!')});
 });
