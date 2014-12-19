@@ -1,20 +1,39 @@
 <!doctype html>
 <html>
-    <head>
-        <script type="text/javascript" src="jslib.js"></script>
-        <script type="text/javascript" src="js.js"></script>
-    </head>
-    <body>
-        <p id="test">Hi I'm working</p>
-        <p>Woot</p>
 
-        <div class="another-test"><p>Here is another test</p></div>
-        <ul class="list">
-            <li class="">1</li>
-            <li class="remove">2</li>
-            <li class="">3</li>
+<head>
+    <script type="text/javascript" src="jslib.js"></script>
+    <script type="text/javascript" src="js.js"></script>
+</head>
+
+<body>
+    <p id="test" class="chris" data-uri="http://google.com">Hi I'm working</p>
+    <p>Woot</p>
+
+    <div class="another-test">
+        <p>Here is another test</p>
+    </div>
+    <ul class="list">
+        <li data-test="http://chris-shumate.com" class="find-example">1
+            <ul>
+                <li>more lis</li>
+                <li>even more</li>
+                <li>and more</li>
+            </ul>
+        </li>
+
+        <li class="remove">2</li>
+        <li class="">3</li>
+        <li class="find-example">
+            <ul>
+                <li>second example</li>
+                <li>second example #2</li>
+                <li>second example #3</li>
+            </ul>
+        </li>
 
 
-        </ul>
-    </body>
+    </ul>
+</body>
+
 </html>

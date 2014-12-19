@@ -1,5 +1,5 @@
-jl(document).ready(function() {
-    var p = jl("<p />").text("test").result();
+$(document).ready(function() {
+   /* var p = jl("<p />").text("test").result();
     jl("p").style('color', 'blue').before("<p>Before</p>").after("<p>After 2</p>");
     jl("#test").style('color', 'red').style('fontWeight', 'bold').after(p);
 
@@ -23,6 +23,16 @@ jl(document).ready(function() {
     jl('#myParent > [ng-click]');
     */
 
-    var kids = jl(".list").children().result();
-    console.log(kids);
+    //var kids = jl(".list").children().result();
+    
+    /*
+    Example of non-existent element - throws error on result()
+    var result = jl("#example").attr('data-test').result();
+    console.log(result);
+    */
+    
+     $(".find-example").addClass("appending-class, woot").removeClass('woot').find("li").addClass('added classes to found elements').removeClass('added, found');
+    var result= $("#test").hasClass('chris').result();
+    console.log(result);
+    
 });
