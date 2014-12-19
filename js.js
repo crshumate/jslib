@@ -25,19 +25,20 @@ $(document).ready(function() {
 
     //var kids = jl(".list").children().result();
     
-    /*
-    Example of non-existent element - throws error on result()
-    var result = jl("#example").attr('data-test').result();
-    console.log(result);
-    */
+    
+    
+    var res = jl("#test").hasClass('chris').result();
+    console.log(res);
+    
+    
     
     // $(".find-example").addClass("appending-class, woot").removeClass('woot').find("li").addClass('added classes to found elements').removeClass('added, found');
-    //var result= $("#test").hasClass('chris').result();
+   /* $("#test").addClass('bri,chris').removeClass('chris');//.hasClass('chris').result();
     
     $(".another-test").on('click',function(){
         console.log("i'm working!");
     });
-    $(".another-test").click();
+    //$(".another-test").click();
     $("#test").click(function(){
         console.log('iclickedonchris');
     });
@@ -46,7 +47,16 @@ $(document).ready(function() {
         $("#myInput").blur();
     },2000)
     
+    $(".another-test").trigger('click', function(){
+        console.log('clicked foo!');
+    });*/
     //$("#test").hover(function(){console.log('thou has hovered');}, function(){console.log('thou has left');});
 
     //$("#myInput").keyup(function(){console.log('bro keyup dude')}).keydown(function(){console.log('sista we got a keydown!')});
+
+    /*var res = $("#test").text().result();
+    console.log(res);*/
+
+    //var test = $(".dynamic").val('dyna').change();
+
 });

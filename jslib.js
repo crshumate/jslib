@@ -36,13 +36,16 @@ jl.init = function(selector) {
         //global check to make sure our selected element exists!!
         if (!jl.init.selector || jl.init.selector.length === 0) {
             jl.init.isValid = false;
+            jl.init.value = '';
         } else {
             jl.init.isValid = true;
+            jl.init.value = jl.init.selector;
         }
 
         //if we are ready and have < > as first and last chars we are creating a new element
     } else if (jl.isReady()) {
         jl.init.selector = document.createElement(selector.replace(/\W/g, ""));
+        jl.init.value = jl.init.selector;
 
     }
 
@@ -55,48 +58,43 @@ jl.init = function(selector) {
         /*if selector does not have a 0 index getElementById was used to find it which means
             we have immediate access to insertAdjacentHTML and other props/funcs
         */
-        if (typeof selector[0] === 'undefined') {
+        if (this.selector.nodeType) {
             selector.insertAdjacentHTML(status, html);
         } else {
             /*if querySelectorAll was used we need to loop through results to access props/funcs*/
-            var length = selector.length;
-            for (var i = 0; i < length; i++) {
-                selector[i].insertAdjacentHTML(status, html);
-            }
+            each(this.selector, function(selector) {
+                selector.insertAdjacentHTML(status, html);
+            });
+
+
         }
     }
 
     function addRemoveClass(selector, status, class_name) {
         class_name = class_name.split(",");
-        var c_length = class_name.length;
-        if (typeof selector[0] === 'undefined') {
 
-            for (var i = 0; i < c_length; i++) {
-                if (status === 'add') {
-                    selector.className += " " + class_name[i];
-                    selector.className = selector.className.trim();
-                } else {
-                    selector.className = selector.className.replace(class_name[i], '');
-                    selector.className = selector.className.trim();
-                }
-            }
+        if (this.selector.nodeType) {
+            each(class_name, function(class_name) {
+                getSetClass(selector, status, class_name);
+            });
 
 
         } else {
-            var length = selector.length;
-            for (var i = 0; i < length; i++) {
-                for (var j = 0; j < c_length; j++) {
+            each(this.selector, function(selector) {
+                each(class_name, function(class_name) {
+                    getSetClass(selector, status, class_name);
+                });
+            });
+        }
 
-                    if (status === 'add') {
-                        selector[i].className += " " + class_name[j];
-                        selector[i].className = selector[i].className.trim();
-                    } else {
-                        selector[i].className = selector[i].className.replace(class_name[j], '');
-                        selector[i].className = selector[i].className.trim();
-
-                    }
-                }
-
+        function getSetClass(selector, status, class_name) {
+            if (status === 'add') {
+                selector.className += " " + class_name;
+                selector.className = selector.className.trim();
+            } else {
+                class_name = new RegExp(class_name, "g");
+                selector.className = selector.className.replace(class_name, '');
+                selector.className = selector.className.trim();
 
             }
         }
@@ -114,24 +112,51 @@ jl.init = function(selector) {
             "focus": "onfocus"
         };
 
-        if (typeof selector[0] === 'undefined') {
+        if (this.selector.nodeType) {
             selector[event_map[event]] = callback;
         } else {
-            var length = selector.length;
-            for (var i = 0; i < length; i++) {
-                selector[i][event_map[event]] = callback;
-            }
+            each(this.selector, function(selector) {
+                selector[event_map[event]] = callback;
+            });
+
+
         }
     }
 
-    function triggerEvent(selector, event) {
-        if (typeof selector[0] === 'undefined') {
-            selector[event]();
-        } else {
-            var length = selector.length;
-            for (var i = 0; i < length; i++) {
-                selector[i][event]();
+    function triggerEvent(selector, event, callback) {
+        if (this.selector.nodeType) {
+            if (event === 'change') {
+                if (selector.value && selector.value !== '') {
+                    selector.value = this.value;
+                }
+
+            } else {
+                selector[event]();
+                if (callback) callback();
             }
+
+
+        } else {
+            each(this.selector, function(selector) {
+                if (event === 'change') {
+                    if (selector.value && selector.value !== '') {
+                        selector.value = this.value;
+                    }
+                } else {
+                    selector[event]();
+                    if (callback) callback();
+                }
+            });
+
+        }
+    }
+
+    function each(arr, callback) {
+        for (var i = 0; i < arr.length; i++) {
+            if (!callback(arr[i], i)) {
+                break;
+            }
+
         }
     }
 
@@ -141,7 +166,7 @@ jl.init = function(selector) {
         /*selector should be immutable, that is why we have value below..*/
         selector: jl.init.selector,
         /*value is what is populated if we run a method that should return a value, sometimes it is the selector other times it is the computed value based on our */
-        value: '',
+        value: jl.init.value,
         addClass: function(class_name) {
 
             if (!this.isValid) return this;
@@ -171,21 +196,23 @@ jl.init = function(selector) {
                 return this;
             }
 
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 if (!val) {
                     this.value = this.selector.getAttribute(attr);
                 } else {
                     this.selector.setAttribute(attr, val);
                 }
             } else {
-                var length = this.selector.length;
-                for (var i = 0; i < length; i++) {
-                    if (!val) {
-                        this.value = this.selector[0].getAttribute(attr);
-                    } else {
-                        this.selector[i].setAttribute(attr, val);
-                    }
+
+                if (!val) {
+                    this.value = this.selector[0].getAttribute(attr);
+                } else {
+                    each(this.selector, function(selector) {
+                        selector.setAttribute(attr, val);
+                    });
                 }
+
+
             }
 
             return this;
@@ -209,32 +236,21 @@ jl.init = function(selector) {
                 return this;
             }
         },
-        change: function(callback) {
-            if (!this.isValid) return this;
-            if (callback) {
-                eventHandler(this.selector, 'change', callback);
-            } else {
-                //TODO: handle triggered Change event..... 
-            }
-            return this;
-        },
         children: function() {
 
             if (!this.isValid) return this;
 
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 this.selector = this.selector.children;
                 this.value = this.selector;
                 //if we don't have access to style property loop through array
             } else {
-                var length = this.selector.length;
                 var arr = [];
-                for (var i = 0; i < length; i++) {
-                    for (var j = 0; j < this.selector[i].children.length; j++) {
-                        arr.push(this.selector[i].children[j]);
-                    }
-                }
-
+                each(this.selector, function(selector) {
+                    each(selector.children, function(child) {
+                        arr.push(child);
+                    })
+                });
                 this.selector = arr;
                 this.value = this.selector;
             }
@@ -252,28 +268,26 @@ jl.init = function(selector) {
 
             return this;
         },
-        find: function(selector) {
+        find: function(input_selector) {
 
             if (!this.isValid) return this;
 
 
-            if (typeof this.selector[0] === 'undefined') {
-                this.selector = this.selector.querySelectorAll(selector);
+            if (this.selector.nodeType) {
+                this.selector = this.selector.querySelectorAll(input_selector);
                 this.value = this.selector;
             } else {
                 var arr = [],
-                    length = this.selector.length,
-                    found_items, fi_length;
+                    found_items;
 
                 //we may have more than one element matching the main selector
-                for (var i = 0; i < length; i++) {
-                    found_items = this.selector[i].querySelectorAll(selector);
-                    fi_length = found_items.length;
-                    //each matching element may have more than match within the find param
-                    for (var j = 0; j < fi_length; j++) {
-                        arr.push(found_items[j]);
-                    }
-                }
+                each(this.selector, function(selector) {
+                    found_items = selector.querySelectorAll(input_selector);
+                    each(found_items, function(found_item) {
+                        arr.push(found_item);
+                    });
+                });
+
                 this.selector = arr;
                 this.value = this.selector;
             }
@@ -291,23 +305,24 @@ jl.init = function(selector) {
         },
         hasClass: function(class_name) {
             if (!this.isValid) return this;
-
+            //assigning that to this so we can reach inside of callback to assign true value..
+            var that = this;
             //default to false
             this.value = false;
             var classes;
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
 
                 classes = this.selector.className.split(" ");
             } else {
                 classes = this.selector[0].className.split(" ");
             }
-
-            for (var i = 0; i < classes.length; i++) {
-                if (classes[i] === class_name) {
-                    this.value = true;
-                    break;
+            each(classes, function(r_class) {
+                if (r_class === class_name) {
+                    that.value = true;
+                    return false;
                 }
-            }
+            });
+
             return this;
         },
         hover: function(callback1, callback2) {
@@ -344,7 +359,7 @@ jl.init = function(selector) {
         parent: function() {
             if (!this.isValid) return this;
 
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 this.selector = this.selector.parentNode;
                 this.value = this.selector;
             } else {
@@ -359,14 +374,13 @@ jl.init = function(selector) {
             if (!this.isValid) return this;
 
             //if we have access to style this is a getElementById return element
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 this.selector.style[property] = value;
                 //if we don't have access to style property loop through array
             } else {
-                var length = this.selector.length;
-                for (var i = 0; i < length; i++) {
-                    this.selector[i].style[property] = value;
-                }
+                each(this.selector, function(selector) {
+                    selector.style[property] = value;
+                });
             }
 
             return this;
@@ -388,26 +402,24 @@ jl.init = function(selector) {
 
             if (!this.isValid) return this;
 
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 this.selector.parentNode.removeChild(this.selector);
                 //if we don't have access to style property loop through array
             } else {
-                var length = this.selector.length;
-                for (var i = 0; i < length; i++) {
-                    this.selector[i].parentNode.removeChild(this.selector[i]);
-                }
+                each(this.selector, function(selector) {
+                    selector.parenNode.removeChild(selector);
+                });
             }
         },
         removeAttr: function(attr) {
             if (!this.isValid) return this;
-            if (typeof this.selector[0] === 'undefined') {
+            if (this.selector.nodeType) {
                 this.selector.removeAttribute(attr);
                 //if we don't have access to style property loop through array
             } else {
-                var length = this.selector.length;
-                for (var i = 0; i < length; i++) {
-                    this.selector[i].removeAttribute(attr);
-                }
+                each(this.selector, function() {
+                    selector.removeAttribute(attr);
+                });
             }
             return this;
         },
@@ -425,13 +437,65 @@ jl.init = function(selector) {
 
         text: function(text) {
             if (!this.isValid) return this;
-
-            if (!text) {
-                this.value = this.selector.textContent;
+            if (this.selector.nodeType) {
+                getSetText(this.selector, this, text);
             } else {
-                this.selector.textContent = text;
+                if (!text) {
+                    getSetText(this.selector[0], this);
+                } else {
+                    each(this.selector, function(selector) {
+                        getSetText(selector, false, text);
+                    });
+                }
+
             }
 
+            function getSetText(selector, lib, text) {
+                if (!text) {
+                    lib.value = selector.textContent;
+                } else {
+                    selector.textContent = text;
+                }
+            }
+
+            return this;
+        },
+        trigger: function(event, callback) {
+            if (!this.isValid) return this;
+            triggerEvent(this.selector, event, callback);
+            return this;
+        },
+        val: function(value) {
+            var that = this;
+            if (!this.isValid) return this;
+            if (this.selector.nodeType) {
+
+                //if this.selector doesn't have a value property
+                if (!this.selector.value) return this;
+                //if truthy we have a value to set...
+                if (value) {
+                    this.selector.value = value;
+                    this.value = value;
+                    //else: we are getting a value...
+                } else {
+                    this.value = this.selector.value;
+                }
+
+            } else {
+                each(this.selector, function(selector, i) {
+                    /*if this element doesn't have a value prop continue to next item */
+                    if (!selector.value) return;
+                    if (value) {
+                        that.value = value;
+                        selector.value = value;
+                    } else {
+                        if (i === 0) {
+                            that.value = selector.value;
+                        }
+                    }
+                });
+
+            }
             return this;
         }
 
