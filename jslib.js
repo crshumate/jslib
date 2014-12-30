@@ -5,6 +5,29 @@ var jl = function(selector) {
 //drop in replacement for jquery
 var $ = jl;
 
+jl.ajax = function(params, fn) {
+    var res;
+    params.type = params.type || 'text';
+
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(params.method, encodeURI(params.url));
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            res = xhr.responseText;
+            if(params.type==='JSON'){
+               res =  JSON.parse(xhr.responseText)
+            }
+            fn(res);
+        } else {
+            fn(xhr.status);
+        }
+    };
+    xhr.send();
+
+
+};
+
 //this is a setter to set page readyState
 jl.setReady = function(readyState) {
     this.readyState = readyState;
@@ -180,7 +203,6 @@ jl.init = function(selector) {
             return this;
 
         },
-
         append: function(html) {
             if (!this.isValid) return this;
 
